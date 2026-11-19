@@ -4,6 +4,8 @@ A fork of [thetejasagrawal/Pinterest-LocalBoard](https://github.com/thetejasagra
 
 All the board scanning logic is the original project's work (MIT licensed, see `LICENSE`). This fork only changes what happens after the scan.
 
+![App Screenshot](extension/assets/layout.png)
+
 ## What's different from the original
 
 ||Original|This fork|
