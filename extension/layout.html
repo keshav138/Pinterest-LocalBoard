@@ -1,0 +1,87 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>A4 Layout</title>
+<style>
+  :root{--red:#bd0025;--ink:#171516;--mute:#767173;--cream:#fffaf5;--soft:#eee8e3;--line:rgba(118,83,65,.18);--bg:#f3ebe4}
+  *{box-sizing:border-box}
+  body{margin:0;display:flex;height:100vh;background:var(--bg);color:var(--ink);font:13px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
+  aside{width:288px;flex:none;overflow:auto;padding:14px;background:var(--cream);border-right:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:9px}
+  .brand img{width:34px;height:34px;border-radius:10px;object-fit:cover;box-shadow:0 4px 11px rgba(34,83,119,.18)}
+  .brand .t{color:var(--red);font:800 18px ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold",sans-serif;letter-spacing:-.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .pill{margin-left:auto;border-radius:999px;background:#eaf7ec;color:#087a3d;padding:6px 9px;font-size:10px;font-weight:800;flex:none}
+  .pill.busy{background:#fdeee0;color:#a35200}
+  #st{margin:10px 0 2px;font-size:10.5px;color:var(--mute);line-height:1.4}
+  .bar{height:7px;border-radius:999px;background:#eee7e2;overflow:hidden;margin:8px 0 4px}
+  .bar i{display:block;height:100%;width:0;background:var(--red);border-radius:inherit;transition:width .18s}
+  h4{margin:16px 0 6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  label{display:block;margin:8px 0 3px;font-weight:700;font-size:12px}
+  label.chk{display:flex;gap:6px;align-items:center}
+  input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;color:inherit}
+  input[type=file]{width:100%;font-size:11px;margin:3px 0}
+  button{appearance:none;border:0;border-radius:10px;cursor:pointer;font:inherit;font-weight:700;padding:9px 11px;width:100%;margin:3px 0;background:var(--soft);color:#4d494b}
+  button:hover{filter:brightness(.97)}
+  button.pri{background:var(--red);color:#fff}
+  .row{display:flex;gap:6px}.row button{margin:3px 0}
+  .hint{font-size:11px;color:var(--mute);line-height:1.4;margin-top:6px}
+  main{flex:1;overflow:auto;padding:20px;display:flex;flex-wrap:wrap;gap:18px;align-content:flex-start}
+  .pg{position:relative;background:#fff;flex:none;border-radius:4px;box-shadow:0 10px 30px rgba(48,31,24,.2),0 2px 6px rgba(48,31,24,.1)}
+  .pg img{position:absolute;cursor:grab}
+  .pg img.over{outline:3px solid var(--red);outline-offset:-3px}
+  .pg .x{position:absolute;display:none;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;line-height:18px;text-align:center;font-size:10px;cursor:pointer}
+  .pg img:hover+.x,.pg .x:hover{display:block}
+  #choice{position:fixed;inset:0;background:rgba(48,31,24,.45);display:none;align-items:center;justify-content:center;z-index:10}
+  #choice .panel{width:380px;padding:18px;border:1px solid var(--line);border-radius:20px;background:var(--cream);box-shadow:0 22px 70px rgba(48,31,24,.28)}
+  #choice .msg{margin:14px 0 4px;font-size:14px;font-weight:720;line-height:1.4}
+  #choice .sub{font-size:11px;color:var(--mute);margin-bottom:12px}
+  #choice button{padding:12px;font-size:13px}
+  #print{display:none}
+  @media print{
+    body{display:block;height:auto;background:#fff}
+    aside,main,#choice{display:none!important}
+    #print{display:block}
+    .pp{position:relative;overflow:hidden;break-after:page;page-break-after:always}
+    .pp:last-child{break-after:auto;page-break-after:auto}
+    .pp img{position:absolute}
+  }
+</style>
+<style id="pstyle"></style>
+<aside>
+  <div class="brand"><img id="logo" src="assets/localboard-logo.png" alt=""><div class="t" id="title">A4 Layout</div><div class="pill busy" id="pill">Loading</div></div>
+  <div id="st"></div>
+  <div class="bar"><i id="prog"></i></div>
+
+  <h4>Layout</h4>
+  <select id="layout"><option value="rows">Justified rows</option><option value="masonry">Masonry columns</option></select>
+  <label class="chk"><input id="land" type="checkbox"> Landscape</label>
+  <div class="row"><div><label>Margin (mm)</label><input id="m" type="number" value="10" min="0"></div><div><label>Gap (mm)</label><input id="gap" type="number" value="3" min="0"></div></div>
+  <div class="row"><div><label>Row height (mm)</label><input id="rowH" type="number" value="50" min="10"></div><div><label>Columns</label><input id="cols" type="number" value="3" min="1" max="8"></div></div>
+
+  <h4>Realign</h4>
+  <div class="row"><button id="shuf">Shuffle</button><button id="best">Best fit</button></div>
+  <div class="hint">Drag an image onto another to reorder. Hover and press ✕ to remove. Best fit tries 300 orders.</div>
+
+  <h4>Output</h4>
+  <button class="pri" id="print-btn">Print</button>
+  <div class="row"><button id="pdf">PDF</button><button id="png">PNG zip</button></div>
+  <button id="zip">Download original images (ZIP)</button>
+
+  <h4>Add images</h4>
+  <input id="files" type="file" accept="image/*" multiple>
+  <input id="dir" type="file" webkitdirectory>
+  <button id="clear">Clear all</button>
+</aside>
+<main id="main"></main>
+
+<div id="choice"><div class="panel">
+  <div class="brand"><div class="t" id="ctitle">Board captured</div><div class="pill">Complete</div></div>
+  <div class="msg" id="cmsg"></div>
+  <div class="sub" id="csub"></div>
+  <button id="c-zip">Download ZIP</button>
+  <button class="pri" id="c-print">Arrange &amp; print on A4</button>
+</div></div>
+
+<div id="print"></div>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="layout.js"></script>

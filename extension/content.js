@@ -228,7 +228,10 @@
     }
 
     state.abortController = new AbortController();
-    const exportMode = requestedExportMode === "parts" ? "parts" : "single";
+    const exportMode =
+      requestedExportMode === "parts" || requestedExportMode === "layout"
+        ? requestedExportMode
+        : "single";
     state.jobPromise = runDownloadWorkflow(context, pinIds, exportMode)
       .catch((error) => {
         console.error(`${EXTENSION_NAME}:`, error);
@@ -292,6 +295,38 @@
       const scanResult = await collectBoardRecords(context, pinIds, exactBoardUrl);
       const records = scanResult.records;
       assertNotCancelled(runSignal);
+
+      if (exportMode === "layout") {
+        window.scrollTo(0, initialScrollY);
+        updateRun({
+          stage: "downloading",
+          message: `Opening A4 layout with ${records.length} images…`,
+          collected: records.length,
+          downloaded: 0,
+          failed: 0
+        });
+        const reply = await chrome.runtime.sendMessage({
+          type: "LOCALBOARD_OPEN_LAYOUT",
+          boardName: context.boardName || "Pinterest board",
+          boardUrl: exactBoardUrl,
+          records: records.map((r) => ({
+            id: r.pinId,
+            title: r.title,
+            candidates: r.candidates.slice(0, 4)
+          }))
+        });
+        if (!reply?.ok) {
+          throw new Error(reply?.reason || "Could not open the layout page.");
+        }
+        updateRun({
+          stage: "done",
+          message: `Opened A4 layout with ${records.length} images.`,
+          downloaded: records.length,
+          zipProgress: 100,
+          finishedAt: Date.now()
+        });
+        return;
+      }
 
       const resumeIdentity =
         exportMode === "parts"
